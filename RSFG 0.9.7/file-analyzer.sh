@@ -1,10 +1,18 @@
 #!/usr/bin/bash
-echo
-echo -n  "Do you want to analyze the output? Y/N: "
-read z
-echo
 
-if [ $z = 'Y' ] || [ $z = 'y' ]; then
+#
+# Project: file-analyzer.sh
+# Author: Cyber-Yoda
+# Description: Forked from jfish781 with goal of rewriting to be more... 'optimal' in terms of performance (not ASM optimal but you get it...)
+#
+
+# Replaced entire banner to use: printf "", read -p, response
+printf "\n"
+read -p  " Analyze Otput? Y/n >  " response
+printf
+
+# Refactor to use Registry Expression
+if [[ $response =~ ^([Yy]|[Yy][Ee][Ss])$ || [ -z $response ]]; then
 	a=$(grep -v '^[[:blank:]]*$'  TempFiles/Sorted.txt) # removes all blank lines from the input file
 	echo -e "$a \n" > TempFiles/SortedNB.txt #copies the contents of a to SortedNB.txt 
 	echo > TempFiles/Analysis.txt # Creates a blank file called Analysis.txt in the TempFiles directory
