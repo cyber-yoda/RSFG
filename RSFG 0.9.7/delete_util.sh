@@ -6,20 +6,26 @@
 # Description: Simple script that will allow the user to delete the files in a fixed directory.
 #
 
-printf "\nDo you want to clean out the  files? y/N: " 	# asks for user input 
-read d							# records the what the user entered to the d varible 
-printf "\n"
+read -p "Delete .txt files Y/n > " user_input
 
-if [ $d = 'Y' ] || [ $d = 'y' ]; then #if the user enters yes, it will  delete all the text files in the folder and uses the '||' or operator to allow both upper and lower case Y as a valid responce.
-				       
-        rm -iv ~/Downloads/*.txt # uses the rm command with the prompt and verbose flags to prompt before deletion each file ending in .txt in the ~/Downloads directory.
+target_file="$HOME/Projects/RSFG/TempFiles/deleteme.txt"
+
+if [[ "$user_input" =~ ^[Yy]$ ]]; then
+
+    if [[ -f "$target_file" ]]; then
+        printf " [+] Found file, deleting... \n"
+        rm -Iv "$target_file"
+        printf " [+] File deleted successfully.\n"
 	
-elif [ $d = 'N' ] || [ $d = 'n' ]; then
-	printf " [-] No Files Deleted... \n"
+    else
+        printf " [-] No such file: %s\n" "$target_file"
+	
+    fi
 
-elif [ $d = 'Y' ] || [ $d = 'y' ]; then
-	printf " [+] Deleted Files ... \n"
+elif [[ "$user_input" =~ ^[Nn]$ ]]; then
+    printf " [-] No files deleted... \n"
 
 else
-	printf "%s: Expected y\N" "$d"
+    printf "%s: [-] Expected: y or n\n" "$user_input"
+
 fi
