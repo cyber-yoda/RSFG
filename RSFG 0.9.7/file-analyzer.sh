@@ -44,17 +44,17 @@ if [[ $response =~ ^([Yy]|[Yy][Ee][Ss])$ || [ -z $response ]]; then
        			less TempFiles/Output.txt
        			;;
 	  
-    		2)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+    		2)	# Solving issue with output not being Reverse-Numeric Sort, planning on switching over to awk instead
       			sort -rn TempFiles/Analysis.txt | uniq >> TempFile/Output.txt
 	 		less TempFiles/Output.txt
 	 		;;
     
-      		3)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+      		3)	# Solving issue with output not doing a Numeric Sort, planning on switching over to awk instead
 			sort -n TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
    			less TempFiles/Output.txt
    			;;
       
-		4)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+		4)	# Solving issue with output not doing a Random Sort, planning on switching over to awk instead
   			sort -R TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
      			less TempFiles/Output.txt
      			;;
