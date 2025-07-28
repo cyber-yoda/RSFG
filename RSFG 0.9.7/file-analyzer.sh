@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 #
 # Project: file-analyzer.sh
@@ -8,58 +8,65 @@
 
 # Replaced entire banner to use: printf "", read -p, response
 printf "\n"
-read -p  " Analyze Otput? Y/n >  " response
+read -p " Analyze Output? Y/n >  " response
 printf
 
 # Refactor to use Registry Expression
 if [[ $response =~ ^([Yy]|[Yy][Ee][Ss])$ || [ -z $response ]]; then
-	a=$(grep -v '^[[:blank:]]*$'  TempFiles/Sorted.txt) # removes all blank lines from the input file
-	echo -e "$a \n" > TempFiles/SortedNB.txt #copies the contents of a to SortedNB.txt 
-	echo > TempFiles/Analysis.txt # Creates a blank file called Analysis.txt in the TempFiles directory
+	grep -v '^[[:blank:]]*$'  TempFiles/Sorted.txt >> TempFiles/SortedNB.txt >> TempFiles/analyzer.txt # No longer a variable and creates new file 'analyzer.txt' for output rather using >>
+	echo -e "$a \n" >> TempFiles/SortedNB.txt #copies the contents of $a to SortedNB.txt
 
-	while read p; do # for each line in Sorted.txt, preform these actions...
-		grep $(head -n1 TempFiles/SortedNB.txt) TempFiles/Sorted.txt > TempFiles/Search.txt # grabs the first word from a, sends the result to Search.txt
-		printf '%-4s %s | ' "$(wc -w TempFiles/Search.txt | tr -d 'TempFiles/Search.txt')" >> TempFiles/Analysis.txt # prints the word count of Search.txt, but does not display the file path, and formats the output 
-		echo  "$(head -n1 TempFiles/SortedNB.txt)" >> TempFiles/Analysis.txt # prints the first line of Sorted.NB.txt, with no traling newline.
-		sed -i '1d' TempFiles/SortedNB.txt # deletes the first line of the file
+	while read -r entry; do # for each line in analyzer.txt, preform the following...
+ 		search_term=$(head -n1 TempFiles/SortedNB.txt) # Start at the first line in TempFiles/analyzer.txt
+		grep "$search_term" TempFiles/SortedNB.txt
+
+    		word_count=$(awk '{ total += NF } END { print total }' TempFiles/Search.txt)
+		printf '%-4s %s | ' "$word_count" >> TempFiles/Analysis.txt # prints the word count of Search.txt, but does not display the file path, and formats the output 
+		printf "$search_term" >> TempFiles/Analysis.txt
+  
+		sed -i '1d' TempFiles/SortedNB.txt # deletes the first line of the file; similar functionality in vi (5d deletes 5 lines)
 	done  < TempFiles/Sorted.txt
 
 	sed -i '$ d' TempFiles/Analysis.txt # deletes the last line of the file
 
-	echo -e "How do you want to sort the output?\n\n1: Alphabetical\n2: Biggest First\n3: Smallest First\n4: Random "
- 	read w
-	echo
-	if [ $w = '1' ]; then
+ 	# Shortened Down Sort Options dramatically
+	printf "How do you want to sort the output?\n\n"
+ 	printf "1: Alphabetical\n" sort_choice
+  	printf "2: Biggest First\n" sort_choice
+   	printf "3: Smallest First\n" sort_choice
+    	printf "4: Random\n" sort_choice
+ 	read -r "[+] Select Sort Choice > " sort_choice
+	print " "
 
-	cat TempFiles/Analysis.txt | uniq > TempFiles/Output.txt # because the input file is already sorted, uses uniq to remove dupe lines, and puts the result in TempFiles/Output.txt
-	more TempFiles/Output.txt
-
-	elif [ $w = '2' ]; then
-
-	sort -rn TempFiles/Analysis.txt | uniq > TempFiles/Output.txt # preforms a reverse numeric sort, removes dupe lines
-	more TempFiles/Output.txt
-
-	elif [ $w = '3' ]; then
-
-        sort -n TempFiles/Analysis.txt | uniq > TempFiles/Output.txt # preforms a regular numeric sort, removes dupe lines
-        more TempFiles/Output.txt
-
-	elif [ $w = '4' ]; then
-
-	sort -R TempFiles/Analysis.txt | uniq > TempFiles/Output.txt # preforms a random sort, removes dupe lines
-        more TempFiles/Output.txt
-
-	else
-
-	echo $w ": Expected 1 2 3 or 4"
-
-	fi
-elif [ $z = 'N' ] || [ $z = 'n' ]; then
-
-	echo 'Goodbye!'
-	echo
-
+ 	case "$sort_choice" in
+  		1)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+    			sort TempFiles/Analysis.txt | uniq TempFiles/Output.txt 
+       			less TempFiles/Output.txt
+       			;;
+	  
+    		2)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+      			sort -rn TempFiles/Analysis.txt | uniq >> TempFile/Output.txt
+	 		less TempFiles/Output.txt
+	 		;;
+    
+      		3)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+			sort -n TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
+   			less TempFiles/Output.txt
+   			;;
+      
+		4)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+  			sort -R TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
+     			less TempFiles/Output.txt
+     			;;
+	
+  		*)
+    			printf "$sort_choice : Expected 1, 2, 3, or 4 ..."
+       			sleep 3 ; exit 1 # Likely will change in next revision leading up to commit
+	  		;;
+     	esac
+      
+elif [[ "$response" =~ ^([Nn]|[][])$ ]]; then
+	printf "Goodbye!\n"
 else
-
-	echo $z ": Expected Y/y or N/n"
+      	printf "$response : Expected Y/y or N/n"
 fi
