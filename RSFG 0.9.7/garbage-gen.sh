@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 #generates a file full of random junk
 #
 # set envrioment var from Value.txt
