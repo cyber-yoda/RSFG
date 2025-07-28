@@ -39,29 +39,26 @@ if [[ $response =~ ^([Yy]|[Yy][Ee][Ss])$ || [ -z $response ]]; then
 	print " "
 
  	case "$sort_choice" in
-  		1)	# Solving issue with output not being Alphabetical, planning on switching over to awk instead
+  		1)	
     			sort TempFiles/Analysis.txt | uniq TempFiles/Output.txt 
        			less TempFiles/Output.txt
        			;;
-	  
-    		2)	# Solving issue with output not being Reverse-Numeric Sort, planning on switching over to awk instead
+    		2)	
       			sort -rn TempFiles/Analysis.txt | uniq >> TempFile/Output.txt
 	 		less TempFiles/Output.txt
 	 		;;
-    
-      		3)	# Solving issue with output not doing a Numeric Sort, planning on switching over to awk instead
+      		3)	
 			sort -n TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
    			less TempFiles/Output.txt
    			;;
-      
-		4)	# Solving issue with output not doing a Random Sort, planning on switching over to awk instead
+		4)	
   			sort -R TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
      			less TempFiles/Output.txt
      			;;
-	
   		*)
     			printf "$sort_choice : Expected 1, 2, 3, or 4 ..."
-       			sleep 3 ; exit 1 # Likely will change in next revision leading up to commit
+       			sleep 3
+	  		exit 1
 	  		;;
      	esac
       
