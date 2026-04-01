@@ -1,7 +1,8 @@
 	Hello, these are some very silly bash scripts I made.
 	The main program is RSFG or Really-Silly-File-Generator.
 	You can run it by opening the opening this folder in your terminal and running
-
+	
+		chmod +x rsfg.sh
 		./RSFG
 
 	Have fun. If you have any strange can't open file errors,
