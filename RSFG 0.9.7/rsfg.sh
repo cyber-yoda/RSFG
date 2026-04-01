@@ -1,36 +1,72 @@
 #!/usr/bin/env bash
-# Internal System Maintenance Utility (Legacy)
+# Internal System Maintenance Utility (Refactor)
 
-printf "Mode (S/V) > " && read x
-awk -v val="${x^^}" 'BEGIN { print val > "TempFiles/Value.txt") }'
+# Variable Declaration + Input
+printf "Mode (S/V) > "
+read x
 
+# Convert to Uppcase using builtin parameter expansion and append to file
+prinf "%s\n" "${x^^}" > "TempFiles/Value.txt"
+
+# Execute Func
 exec_mod() {
+    local bin="$1"
+    local log_file="$2"
+
+    # Autofix permissions and builtins
+    [[ -f "./$bin" && ! -x "./$bin" ]] && chmod +x "./bin"
+
     if [[ "$x" =~ [Vv] ]]; then
-        printf "\n[*] Initializing %s... \n" "$1"
-        local timeout=4
-        while [ $timeout -gt 0 ]; do
-            : # No-op colon is a bash built-in that does nothing
-            ((timeout--))
-            read -t 5 -n 0 2>/dev/null # Silent 5 second interval
+        printf '\033[31m [*] Initializing %s... \033[0m\n' "$bin"
+        # Bultin to replace sleep/wait logic
+        for ((timeout=4; timeout>0; timeput--)); do
+            read -t 1 -n 0 2>/dev/null # sub second precision wait
         done
     fi
 
-    "./$1"
+    # Execute the binary
+    "./$bin"
 
-    # Replace Sleep 2: Wait for bg process 'Div' or TempFile
     if [[ "$x" =~ [Vv] ]]; then
-        awk '1' "TempFiles/$2" & ./Div
+        # Use builtin 'cat' equiv with redirection rather than awk
+        while IFS=read -r line; do
+            printf "%s\n" "$line"
+        done < "TempFile/$log_file" &
+
+        # Reference the bg PID (builtin $!)
+        local div_pid=$!
+        ./Div &
+        local div_exec_pid=$!
+
         local count=0
-        while pgrep -x "Div" >/dev/null && [ $count -lt 4 ]; do
+
+        while kill -0 $div_exec_pid 2>/dev/null && ((count < 4)); do
             ((count++))
-            read -t 2 # More stealth that 'sleep'
+            read -t 1
         done
     fi
 }
 
-for mod in "GarbageGen.sh:Junk.txt" "FileCleaner.sh:Clean.txt" "FileSorter.sh:Sorted.txt" "FileAnalyser.sh:Sorted.txt"; do
-    IFS=":" read -r bin file <<< "$mod"
+# Main Loop
+# Builtin Array for cleaner iterating
+
+# Format: 
+# modules=(
+#    "scriptname.sh:filename.txt"
+#     ...
+#     )
+modules=(
+    "GarbageGen.sh:Junk.txt"
+    "FileCleaner.sh:Clean.txt"
+    "FileSorter.sh:Sorted.txt"
+    "FileAnalyzer.sh:Sorted.txt"
+)
+
+for mod in "${modules[@]}"; do
+    # Built str manipulation for splitting values so not external tools get utilized
+    printf -v bin "${mod%%s:*}"
+    printf -v file "${mod#*:}"
     exec_mod "$bin" "$file"
 done
 
-printf "\n[+] Task Complete.\n Exit Code: $?\n"
+printf '\033[31m [+] Task Complete.\n Exit Code: %d\033[0m\n' "$!"
