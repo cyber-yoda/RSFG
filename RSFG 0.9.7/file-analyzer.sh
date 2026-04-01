@@ -3,67 +3,68 @@
 #
 # Project: file-analyzer.sh
 # Author: Cyber-Yoda
-# Description: Forked from jfish781 with goal of rewriting to be more... 'optimal' in terms of performance (not ASM optimal but you get it...)
+# Description: Refactored to use arrays, efficent redirectitons, and Bash builtins.
 #
 
-# Replaced entire banner to use: printf "", read -p, response
-printf "\n"
-read -p " Analyze Output? Y/n >  " response
-printf
+# Variable Declaration
+printf -v src "TempFiles/Sorted.txt"
+printf -v work_file "TempFiles/SortedNB.txt"
+printf -v analysis_log "TempFiles/Analysis.txt"
+printf -v final_out "TempFiles/Output.txt"
 
-# Refactor to use Registry Expression
-if [[ $response =~ ^([Yy]|[Yy][Ee][Ss])$ || [ -z $response ]]; then
-	grep -v '^[[:blank:]]*$'  TempFiles/Sorted.txt >> TempFiles/SortedNB.txt >> TempFiles/analyzer.txt # No longer a variable and creates new file 'analyzer.txt' for output rather using >>
-	echo -e "$a \n" >> TempFiles/SortedNB.txt #copies the contents of $a to SortedNB.txt
+# Replaced entire banner/user prompt with 2 lines vs 3
+printf '\033[31m Analyze Output? Y/n > \033[31m\n'
+read -r response
 
-	while read -r entry; do # for each line in analyzer.txt, preform the following...
- 		search_term=$(head -n1 TempFiles/SortedNB.txt) # Start at the first line in TempFiles/analyzer.txt
-		grep "$search_term" TempFiles/SortedNB.txt
+# Handle Defalt (empty) as 'Yes'
+[[ -z "$response" ]] && response="y"
 
-    		word_count=$(awk '{ total += NF } END { print total }' TempFiles/Search.txt)
-		printf '%-4s %s | ' "$word_count" >> TempFiles/Analysis.txt # prints the word count of Search.txt, but does not display the file path, and formats the output 
-		printf "$search_term" >> TempFiles/Analysis.txt
-  
-		sed -i '1d' TempFiles/SortedNB.txt # deletes the first line of the file; similar functionality in vi (5d deletes 5 lines)
-	done  < TempFiles/Sorted.txt
+# Refactor Main Execution Logic to still use Regular Expression
+if [[ $response =~ ^([Yy]|[Yy][Ee][Ss])$ ]]; then
+	# Strip away blank lines using 'grep -v' and redirect into work_file
+	grep -v '^[[:blank:]]*$' "$src" > "$work_file"
 
-	sed -i '$ d' TempFiles/Analysis.txt # deletes the last line of the file
+	# Clear away prior analysis to prevent appending old data
+	: > "$analysis_log"
 
- 	# Shortened Down Sort Options dramatically
-	printf "How do you want to sort the output?\n\n"
- 	printf "1: Alphabetical\n" sort_choice
-  	printf "2: Biggest First\n" sort_choice
-   	printf "3: Smallest First\n" sort_choice
-    	printf "4: Random\n" sort_choice
- 	read -r "[+] Select Sort Choice > " sort_choice
-	print " "
+	# Read file into array instead of disk thrashing `sed -i '1d' 
+	mapfile -t lines < "$work_file"
 
- 	case "$sort_choice" in
-  		1)	
-    			sort TempFiles/Analysis.txt | uniq TempFiles/Output.txt 
-       			less TempFiles/Output.txt
-       			;;
-    		2)	
-      			sort -rn TempFiles/Analysis.txt | uniq >> TempFile/Output.txt
-	 		less TempFiles/Output.txt
-	 		;;
-      		3)	
-			sort -n TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
-   			less TempFiles/Output.txt
-   			;;
-		4)	
-  			sort -R TempFiles/Analysis.txt | uniq >> TempFiles/Output.txt
-     			less TempFiles/Output.txt
-     			;;
-  		*)
-    			printf "$sort_choice : Expected 1, 2, 3, or 4 ..."
-       			sleep 3
-	  		exit 1
-	  		;;
-     	esac
-      
-elif [[ "$response" =~ ^([Nn]|[][])$ ]]; then
-	printf "Goodbye!\n"
+	printf '\033[31m [*] Analyzing Word Frequencies...\033[0m\n'
+
+	for search_term in "${lines[@]}"; do
+		read -ra words <<< "$search_term"
+		word_count="${#words[@]}"
+
+		# Format and Save to Analysis Log
+		printf "%-4s %s\n" "$word_count" "$search_term" >> "$analysis_log"
+	done
+
+	# Sort
+	printf '\n\033[31m How Do You want to Sort the Output?\033[0m\n'
+	printf '\033[31m 1: Alphabetical\n 2: Biggest First \n 3: Smallest First \n 4: Random \033[0m\n'
+	printf '\033[31m [*] Select Sort Choice > \033[0m\n'
+	read -r sort_choice
+
+	case "$sort_choice" in
+		1) printf -v opts "" ;;
+		2) printf -v opts "-rn" ;;
+		3) printf -v opts "-n" ;;
+		4) printf -v opts "-R" ;;
+		*) 
+			printf '\033[33m [-] ERROR %s : Invalid Choice. Exiting...\033[0m\n' "$sort_choice"
+			exit 1
+			;;
+	esac
+
+	# Run sort and uniq in one pipeline
+	sort $opts "$analysis_log" | uniq > "$final_out"
+
+	# Open result
+	less "$final_out"
+
+elif [[ "$response" =~ ^[Nn] ]]; then
+	printf 'Goodbye!\n'
 else
-      	printf "$response : Expected Y/y or N/n"
+	printf "\033[33m [-] ERROR %s : Expected Y/y or N/n \033[0m\n" "$response"
 fi
