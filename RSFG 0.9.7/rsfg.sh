@@ -2,11 +2,11 @@
 # Internal System Maintenance Utility (Refactor)
 
 # Variable Declaration + Input
-printf "Mode (S/V) > "
+printf "\033[31m Mode (S/V) > \033[0m"
 read x
 
 # Convert to Uppcase using builtin parameter expansion and append to file
-prinf "%s\n" "${x^^}" > "TempFiles/Value.txt"
+printf "%s\n" "${x^^}" > "TempFiles/Value.txt"
 
 # Execute Func
 exec_mod() {
