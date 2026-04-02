@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # This is not the readme file lmao
 # more of a redundancy in the change the readme file
 # does not already exist
