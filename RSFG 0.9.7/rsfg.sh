@@ -19,7 +19,7 @@ exec_mod() {
     if [[ "$x" =~ [Vv] ]]; then
         printf '\033[31m [*] Initializing %s... \033[0m\n' "$bin"
         # Bultin to replace sleep/wait logic
-        for ((timeout=4; timeout>0; timeput--)); do
+        for ((timeout=4; timeout>0; timeout--)); do
             read -t 1 -n 0 2>/dev/null # sub second precision wait
         done
     fi
@@ -56,10 +56,10 @@ exec_mod() {
 #     ...
 #     )
 modules=(
-    "GarbageGen.sh:Junk.txt"
-    "FileCleaner.sh:Clean.txt"
-    "FileSorter.sh:Sorted.txt"
-    "FileAnalyzer.sh:Sorted.txt"
+    "garbage-gen.sh/Junk.txt"
+    "file-cleaner.sh/Clean.txt"
+    "file-sorter.sh/Sorted.txt"
+    "file-analyzer.sh/Sorted.txt"
 )
 
 for mod in "${modules[@]}"; do
@@ -69,4 +69,5 @@ for mod in "${modules[@]}"; do
     exec_mod "$bin" "$file"
 done
 
-printf '\033[31m [+] Task Complete.\n Exit Code: %d\033[0m\n' "$!"
+printf '\033[31m [+] Task Complete.\n'
+printf '\033[31m [+] Exit Code: %d\033[0m\n' "$!"
