@@ -27,7 +27,7 @@ case "${user_input,,}" in
 		;;
 
 	n|no)
-		printf "\033[33m [-] Operation Aborted. No Files Deleted.\n"
+		printf "\033[33m [-] Operation Aborted. No Files Deleted.\033[0m\n"
 		;;
 		
 	*)
